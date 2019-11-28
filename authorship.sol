@@ -3,13 +3,14 @@ pragma solidity ^0.5.11;
 contract Author{
     
     struct Creator{
-        string song; 
+        
         bool avaliability;
         uint price;
+        address owner;
     }
     
-    mapping(address=>Creator) authors;
-    mapping(string=>address) songToAddress;
+    mapping(bytes32=>Creator) songToStruct;
+    mapping(address=>bytes32) addressToSong;
     
     address administrator;
     
@@ -20,12 +21,10 @@ contract Author{
     
     
     function claimAuthorship(string memory songName,bool forSelling, uint price) public returns (string memory){
+        bytes32 song= keccak256(abi.encodePacked(songName));
+        require ((songToStruct[song].owner==0x0000000000000000000000000000000000000000&&price!=0),"Song already has an author or Invalid price!");
         
-        require ((songToAddress[songName]==0x0000000000000000000000000000000000000000&&price!=0),"Song already has an author or Invalid price!");
-      
-         authors[msg.sender]=Creator(songName,forSelling,price);
-         songToAddress[songName]=msg.sender;
-        
+        songToStruct[song]=Creator(forSelling,price,msg.sender);
         
         
          return "succesfull";
@@ -33,9 +32,10 @@ contract Author{
     }
     
     function getPrice(string memory song)public view returns( uint){
-        require(authors[songToAddress[song]].price!=0,"Invalid song name");
+        bytes32 songer= keccak256(abi.encodePacked(song));
+        require(songToStruct[songer].price!=0,"Invalid song name");
       
-          return authors[songToAddress[song]].price;
+          return songToStruct[songer].price;
       
         
         
@@ -43,10 +43,11 @@ contract Author{
     }
     
     function setAvaliablity(string memory song,bool avaliabilitye) public{
+        bytes32 songer= keccak256(abi.encodePacked(song));
         
-        require(songToAddress[song]==msg.sender,"You are not an author");
+        require(songToStruct[songer].owner==msg.sender,"You are not an author");
         
-        authors[msg.sender].avaliability=avaliabilitye;
+        songToStruct[songer].avaliability=avaliabilitye;
     }
         
         
@@ -54,10 +55,11 @@ contract Author{
 
     
      function buyRights(string memory songer) public payable{
+         bytes32 song= keccak256(abi.encodePacked(songer));
          
-         if(msg.value>=authors[songToAddress[songer]].price&&authors[songToAddress[songer]].avaliability){
-             songToAddress[songer]=msg.sender;
-             authors[songToAddress[songer]].song="nista";
+         if(msg.value>=songToStruct[song].price&&songToStruct[song].avaliability){
+            songToStruct[song].owner=msg.sender;
+             
          }else{
              revert();
          }
