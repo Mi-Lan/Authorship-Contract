@@ -10,7 +10,7 @@ contract Author{
     }
     
     mapping(bytes32=>Creator) songToStruct;
-    mapping(address=>bytes32) addressToSong;
+    
     
     address administrator;
     
