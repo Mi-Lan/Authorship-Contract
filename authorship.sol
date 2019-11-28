@@ -10,10 +10,8 @@ contract Author{
     }
     
     mapping(bytes32=>Creator) songToStruct;
-    mapping(address=>bytes32) addressToSong;
     
     address administrator;
-    
     
     constructor () public{
         administrator=msg.sender;
@@ -26,8 +24,7 @@ contract Author{
         
         songToStruct[song]=Creator(forSelling,price,msg.sender);
         
-        
-         return "succesfull";
+        return "succesfull";
         
     }
     
@@ -36,10 +33,7 @@ contract Author{
         require(songToStruct[songer].price!=0,"Invalid song name");
       
           return songToStruct[songer].price;
-      
-        
-        
-        
+     
     }
     
     function setAvaliablity(string memory song,bool avaliabilitye) public{
@@ -49,16 +43,18 @@ contract Author{
         
         songToStruct[songer].avaliability=avaliabilitye;
     }
-        
-        
     
-
+   
     
      function buyRights(string memory songer) public payable{
          bytes32 song= keccak256(abi.encodePacked(songer));
          
          if(msg.value>=songToStruct[song].price&&songToStruct[song].avaliability){
             songToStruct[song].owner=msg.sender;
+          
+            address simpleAddress=songToStruct[song].owner;
+            address payable addressPayable = address(uint160(simpleAddress));
+            addressPayable.transfer(msg.value ); 
              
          }else{
              revert();
